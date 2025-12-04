@@ -1,27 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Website</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 50px;
-        }
-        h1 {
-            color: #2c3e50;
-        }
-        p {
-            font-size: 18px;
-            color: #34495e;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Scroll Rotate 3D</title>
+  <style>
+    body {
+      margin: 0;
+      height: 300vh; /* makes page scrollable */
+      background: #111;
+      color: white;
+      font-family: sans-serif;
+    }
+    canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      display: block;
+    }
+  </style>
 </head>
 <body>
-    <h1>Welcome to My Test Website</h1>
-    <p>This is a simple HTML page to test your web setup.</p>
-    <p>Change this text to see your updates live!</p>
+
+  <canvas id="webgl"></canvas>
+
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+    import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+
+    const canvas = document.getElementById("webgl");
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      100
+    );
+    camera.position.z = 3;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+
+    let model;
+
+    const loader = new GLTFLoader();
+    loader.load(
+      "totem.glb",  // <-- drop your file in the same folder
+      (gltf) => {
+        model = gltf.scene;
+        scene.add(model);
+      }
+    );
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (model) {
+        // scrollPercent goes from 0 to 1
+        const scrollPercent =
+          window.scrollY / (document.body.scrollHeight - window.innerHeight);
+
+        // rotate based on scroll
+        model.rotation.y = scrollPercent * Math.PI * 4; // 2 full turns
+      }
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+
 </body>
 </html>
